@@ -1,0 +1,83 @@
+pipeline {
+    agent any
+    // This slave can be utilised to run your pipelines
+
+   parameters {
+        choice (name: 'ACTION', choices: ['Create Infra', 'Destroy Infra'], description: 'Choose whether to create or destroy resources')
+        //choice (name: 'Folder_Name', choices: ['VPC', 'EC2', 'RDS'], description: 'select the Terraform folder to apply')
+        string (name: 'Custom_Folder_name', defaultValue: '', description: 'Customer folder name to apply')
+   }
+
+    stages {
+        /*
+        stage ('cleanup workspace') {
+            steps {
+                cleanWs()
+            }
+        }
+        */
+
+        stage ('checkout code') {
+            steps {
+                script {
+                    echo "cloning repository"
+                    checkout scm
+                }
+            }
+        }
+
+        stage ('Terraform Execution Starts') {
+            agent {
+                docker { 
+                        image 'hashicorp/terraform:1.10.5'
+                         args '--entrypoint=""'
+                         reuseNode true
+                }
+            }
+            steps {
+                script {
+                    dir ("${params.Custom_Folder_name}"){
+                    aws(region: 'ap-south-1', credentials: 'Demo')
+                    if (params.ACTION == 'Create Infra') {
+                    
+                         echo "printing all the files available on repo"
+                         sh 'ls -lrth'
+                         echo "Printing current working directory"
+                         sh 'pwd'
+                         echo "creating infrastructure"
+                         sh 'terraform init'
+                         sh 'terraform plan -out=tfplan'
+                         input id: 'verify_plan', message: 'Verify plan for resources', ok: 'Move Ahead?'
+                         sh 'terraform apply -input=false -no-color tfplan'
+                    
+                       }
+                    else if (params.ACTION == 'Destroy Infra') {
+                        
+                        echo "Destroying Infrastructure"
+                        sh 'terraform init'
+                        sh 'terraform plan -destroy -out=tfplan -no-color -input=false'
+                        input id: 'Ready_to_Destroy', message: 'Verify plan for destruction of resources', ok: 'Move Ahead?'
+                        sh 'terraform apply  -input=false -no-color tfplan'
+                       
+                        
+                    }
+                    }
+                }
+            }
+        }
+    }
+    //cd ./Day_2_Five_ways_of_passing_variables_value , use if dir doesn't work
+    //terraform apply -auto-approve tfplan
+    // sh 'terraform destroy -input=false tfplan'
+    post {
+        success {
+            echo "pipeline has been executed successfully"
+        }
+        failure {
+            echo "pipeline has failed. Please investigate"
+        }
+        always {
+            echo "pipeline is deploying Infrastructure on AWS Cloud"
+        }
+    }
+}
