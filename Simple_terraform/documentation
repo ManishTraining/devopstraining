@@ -1,0 +1,63 @@
+CREATE AN EC2
+ON EC2, INSTALL TERRAFORM. 
+NOTE: Follow tf install commands according to OS on your machine. Check OS by command "cat /etc/os-release" and check PRETTY_NAME="Amazon Linux 2023.7.20250609" or Ubuntu.
+Here I have shared terraform install steps for Amazon Linux AMi. 
+ 
+   56  sudo dnf update -y
+   57  sudo dnf install -y wget unzip
+   58  sudo dnf install -y wget unzip
+   59  wget https://releases.hashicorp.com/terraform/1.8.3/terraform_1.8.3_linux_amd64.zip
+   60  unzip terraform_1.8.3_linux_amd64.zip
+   61  sudo mv terraform /usr/local/bin/
+   62  terraform version
+   63  ll
+   64  mkdir terraform_demo
+   65  cd terraform_demo/
+   66  ll
+   67  vi main.tf
+   68  aws configure
+ON AWS, CREATE AN IAM USER WITH S3FULLACCESS AND VPCFULLACCESS AND NO CONSOLE ACCESS. GET ITS ACCESS KEY AND SECRET KEY. USE IT TO COBFIGURE AWS ON YOUR EC2 MACHINE/LOCAL FROM WHERE U WILL BE RUNNING TERRAFORM.
+CREATE AN S3 BUCKET WITH A UNIQUE NAME IN AP-SOUTH-1 REGION
+
+
+cat /etc/os-release 
+   56  sudo dnf update -y
+   57  sudo dnf install -y wget unzip
+   58  sudo dnf install -y wget unzip
+   59  wget https://releases.hashicorp.com/terraform/1.8.3/terraform_1.8.3_linux_amd64.zip
+   60  unzip terraform_1.8.3_linux_amd64.zip
+   61  sudo mv terraform /usr/local/bin/
+   62  terraform version
+   63  ll
+   64  mkdir terraform_demo
+   65  cd terraform_demo/
+   66  ll
+   67  vi main.tf
+   68  vi providers.tf
+   69  aws configure 
+then 
+   70 terraform init
+   71 terraform plan
+   72 terraform apply
+
+cat main.tf 
+resource "aws_vpc" "demo_vpc" {
+  cidr_block = "10.0.0.0/16"
+  tags = {
+    Name = "demo-vpc"
+  }
+}
+
+ cat providers.tf 
+provider "aws" {
+  region = "ap-south-1"
+}
+
+terraform {
+  backend "s3" {
+    bucket = "my-terraform-statefile-bucket1"  # Replace with your actual S3 bucket name
+    key    = "ap-south-1/prod/terraform.tfstate"  # This will create your statefile inside folder ap-south-1/prod in s3 bucket.
+    region = "ap-south-1"
+    encrypt = true
+  }
+}
