@@ -2,7 +2,7 @@ CREATE AN EC2
 ON EC2, INSTALL TERRAFORM. 
 NOTE: Follow tf install commands according to OS on your machine. Check OS by command "cat /etc/os-release" and check PRETTY_NAME="Amazon Linux 2023.7.20250609" or Ubuntu.
 Here I have shared terraform install steps for Amazon Linux AMi. 
- 
+ cat /etc/os-release 
    56  sudo dnf update -y
    57  sudo dnf install -y wget unzip
    58  sudo dnf install -y wget unzip
@@ -14,32 +14,25 @@ Here I have shared terraform install steps for Amazon Linux AMi.
    64  mkdir terraform_demo
    65  cd terraform_demo/
    66  ll
-   67  vi main.tf
-   68  aws configure
-ON AWS, CREATE AN IAM USER WITH S3FULLACCESS AND VPCFULLACCESS AND NO CONSOLE ACCESS. GET ITS ACCESS KEY AND SECRET KEY. USE IT TO COBFIGURE AWS ON YOUR EC2 MACHINE/LOCAL FROM WHERE U WILL BE RUNNING TERRAFORM.
+   67  vi main.tf                           # create main.tf , copy code given below
+   68  vi providers.tf                     # copy code from below
+   69  aws configure 
+
+// ON AWS, CREATE AN IAM USER WITH S3FULLACCESS AND VPCFULLACCESS AND NO CONSOLE ACCESS. GET ITS ACCESS KEY AND SECRET KEY. USE IT TO CONFIGURE AWS ON YOUR EC2 MACHINE/LOCAL FROM WHERE U WILL BE RUNNING TERRAFORM. So, your terraform knows that it has to create resources in this account. 
 CREATE AN S3 BUCKET WITH A UNIQUE NAME IN AP-SOUTH-1 REGION
 
+aws configure
+AWS Access Key ID [None]: AKIA6ELKO75VA  # Give you access key here
+AWS Secret Access Key [None]: Gu8EjLEyqUv3Oc05yNUnUada/JzaXeo  # Give your secret key here
+Default region name [None]: ap-south-1
+Default output format [None]: json
 
-cat /etc/os-release 
-   56  sudo dnf update -y
-   57  sudo dnf install -y wget unzip
-   58  sudo dnf install -y wget unzip
-   59  wget https://releases.hashicorp.com/terraform/1.8.3/terraform_1.8.3_linux_amd64.zip
-   60  unzip terraform_1.8.3_linux_amd64.zip
-   61  sudo mv terraform /usr/local/bin/
-   62  terraform version
-   63  ll
-   64  mkdir terraform_demo
-   65  cd terraform_demo/
-   66  ll
-   67  vi main.tf
-   68  vi providers.tf
-   69  aws configure 
-then 
+
+then run these commands inside folder 'terraform_demo' 
    70 terraform init
    71 terraform plan
    72 terraform apply
-
+---------------------------------------- 
 cat main.tf 
 resource "aws_vpc" "demo_vpc" {
   cidr_block = "10.0.0.0/16"
@@ -47,7 +40,7 @@ resource "aws_vpc" "demo_vpc" {
     Name = "demo-vpc"
   }
 }
-
+-------------------------------------------
  cat providers.tf 
 provider "aws" {
   region = "ap-south-1"
